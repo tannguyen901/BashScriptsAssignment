@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+# Compresses contents of a folder into a backup folder
+#
+# Arguments:
+#   $1 = folder to be backed up
+#   $2 = backup folder
+
+
+# checks whether there are exactly 2 arguments. exit with status code 1 if not
+if [[ "$#" -ne 2 ]]; then
+    echo "This script requires exactly 2 arguments. first is directory to back up, and second is the location of backup directory"
+    exit 1
+fi
+
+# if the file does not exist, exit with status code 1
+folder_path=$1
+if ! [[ -d "$folder_path" ]]; then
+    echo "directory to back up does not exist, choose existing folder."
+    exit 1
+fi
+
+# if the directory does not exist, create it
+backup_path=$2
+if ! [[ -d "$backup_path" ]]; then
+    mkdir $backup_path
+fi
+
+# compress the file and move it to the folder
+if ! [[ -d "$folder_path" ]]; then
+    echo "directory to back up does not exist, choose existing folder."
+else
+    tar -zcvf docs.tar.gz "$folder_path" 
+    tar xf docs.tar.gz -C $backup_path
+    rm docs.tar.gz
+    echo "The '$folder_path' folder has been backed up to the '$backup_path' directory successfully."
+fi

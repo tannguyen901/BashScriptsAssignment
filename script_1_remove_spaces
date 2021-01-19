@@ -1,0 +1,28 @@
+#!/bin/bash
+# Finds all files in current directory that contains spaces, then, exchange those spaces with a '-'.  If there are nofiles
+# lets user know that there are no files in the directory.  An argument can be used to selct directory to run script in.  If no
+# arguments are provided, script is run in current directory.
+
+# in the above doc, explain with the arugments can be
+
+# if an argument is given, go to that directory
+if ! [ -z "$1" ]; then
+  cd ${1}
+fi
+
+# let the user know if there are no files in the directory
+if [ -z "$(ls -A ./)" ]; then
+  echo "There are no files in this directory"
+fi
+
+# iterates through every file in the directory
+for filepath in *; do
+  # replace whitespaces with '-'
+  newfilepath="${filepath// /-}"
+
+  # if filepath and newfilepath are different, rename filepath to newfilepath.
+  if ! [ "$filepath" = "$newfilepath" ]; then
+    mv "$filepath" "$newfilepath"
+    echo "the spaces in filename '$filepath' has been replaced with '-' "
+  fi
+done
