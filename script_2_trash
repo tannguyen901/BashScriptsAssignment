@@ -1,0 +1,69 @@
+#!/bin/bash
+#
+# Trashes input file or folder
+#
+# Either moves folders and files to .trash or uses 
+#
+# Arguments:
+#   $1 = folder to be backed up
+#   $2 = backup folder
+
+
+#Creates a .trash directory in Home directory if it does not exist.  It moves files and 
+#directories (as an argument) to the .trash directory.  This script, by default can only move files, if a 
+#directory wants to be moved, the option of using -r as the first argument, then the folder after must 
+#be used to move to the trash.  It echoes statements to confirm that files or folders have been moved. when rm is set as 
+#alias to run script, the real rm can be used instead to remove with the option "-o"
+
+
+# make the ".trash" directory if it does not exist
+TRASH_PATH="$HOME/.trash"
+if ! [[ -d "${TRASH_PATH}" ]]; then
+  mkdir $TRASH_PATH
+fi
+
+# "-r" flag if trying to delete a folder
+# "-o" flag if you want to use the real "rm"
+r_flag="false"
+o_flag="false"
+while getopts 'ro' flag; do
+  case "${flag}" in
+    r) r_flag="true";
+    o) o_flag="true";
+  esac
+done
+shift $(expr $OPTIND - 1 )
+
+
+# check input file or folder exists
+# note, need to run this after the flags 
+# because "$1" might be one of the flags otherwise
+file_or_folder_path=$1
+if [ ! -e $file_or_folder_path ]; then
+  echo "Input file or folder does not exist"
+  exit 1
+fi
+
+# the real "rm" command is used. however, if it is a folder this command will exit with status code 1
+if [ $o_flag == "true" ] && [ $r_flag == "false" ]; then
+  if [ -d "$file_or_folder_path" ]; then
+    echo "please use -r option to delete folders"
+    exit 1
+  else
+    echo "Since -o option was used, original rm will now be used to delete file '$file_or_folder_path' instead of moving to '.trash' directory"
+    /usr/bin/rm $file_or_folder_path
+  fi
+# the real "rm" command is used. the flag "-r" is set so it can delete folders
+elif [ $o_flag == "true" ] && [ $r_flag == "true" ]; then
+  echo "Since -o option and -r option was used, original rm will now be used to delete folder '$file_or_folder_path' instead of moving to '.trash' directory"
+  /usr/bin/rm -r $file_or_folder_path
+# if the input is a directory and "-r" is not provided, exit with status code 1
+elif [ $r_flag == "false" ] && [ -d "$file_or_folder_path" ]; then
+  echo "only files can be moved. use -r option before argument to delete folders"
+  exit 1
+# move input file/folder to the .trash folder
+# if a folder, move it if the "-r" flag is set
+else
+  mv $file_or_folder_path $TRASH_PATH
+  echo "$file_or_folder_path has been moved to $TRASH_PATH"
+fi
